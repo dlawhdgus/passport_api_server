@@ -75,8 +75,8 @@ MongoClient.connect(config.MONGODB_CONNECT_STRING, function(err, db) {
       console.log('server on!!')
     })
     
-    app.use((req,res,next) => {res.status(404).send('not found')})
+    app.use((req,res,next) => {res.sendStatus(404)})
 
-    app.use((err,req,res,next) => {res.status(500).send('Something broke')})
+    app.use((err,req,res,next) => {res.sendStatus(500)})
 });
 
