@@ -6,7 +6,7 @@ const config = require('../../../config')
 const ObjectId = require('mongodb').ObjectId
 const DBQuery = require('../../../models/collections/board/controller')
 
-exports.PostBoard = (req,res) => {
+exports.PostBoard = (req, res) => {
     try {
         const { title, nickname, body } = req.body
         const filter = {}
@@ -20,41 +20,41 @@ exports.PostBoard = (req,res) => {
             filter.createAt = new Date().toUTCString()
         }
         exports.CreateFilter = filter
-        DBQuery.CreateBoard(req,res)
+        DBQuery.CreateBoard(req, res)
 
     } catch (error) {
         res.status(500).send('Internal Server Error')
     }
 }
 
-exports.Post404 = (req,res) => {
+exports.Post404 = (req, res) => {
     res.status(404).send('Not Found')
 }
 
-exports.GetBoardAll = (req,res) => {
+exports.GetBoardAll = (req, res) => {
     try {
-        DBQuery.ReadBoardAll(req,res)
+        DBQuery.ReadBoardAll(req, res)
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
 }
 
-exports.GetBoardId = (req,res) => {
+exports.GetBoardId = (req, res) => {
     try {
         const { id } = req.params
         if (id.length !== 24) res.status(400).send('Bad Request')
         exports.Get_ObjectId = id
-        DBQuery.ReadBoardId(req,res)
+        DBQuery.ReadBoardId(req, res)
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
 }
 
-exports.Get404 = (req,res) => {
+exports.Get404 = (req, res) => {
     res.status(404).send('Not Found')
 }
 
-exports.PatchBoard = (req,res) => {
+exports.PatchBoard = (req, res) => {
     try {
         const { id } = req.params
         const { title, nickname, body } = req.body
@@ -64,43 +64,43 @@ exports.PatchBoard = (req,res) => {
         if (title && typeof title === 'string') updateQuery.$set.title = title
         if (nickname && typeof nickname === 'string') updateQuery.$set.nickname = nickname
         if (body && typeof body === 'string') updateQuery.$set.body = body
-    
+
         exports.Patch_ObjectId = id
         exports.PatchUpdateQuery = updateQuery
-        DBQuery.UpdateBoard(req,res)
+        DBQuery.UpdateBoard(req, res)
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
 }
 
-exports.Patch404 = (req,res) => {
+exports.Patch404 = (req, res) => {
     res.status(404).send('Not Found')
 }
 
-exports.DeleteBoardId = (req,res) => {
+exports.DeleteBoardId = (req, res) => {
     try {
         const { id } = req.params
         if (id.length !== 24) res.status(400).send('Bad Request')
         exports.DeleteObjectId = id
-        DBQuery.DeleteOneBoard(req,res)
+        DBQuery.DeleteOneBoard(req, res)
     } catch (error) {
         return res.status(500).send('')
     }
 }
 
-exports.DeleteManyBoard = (req,res) => {
+exports.DeleteManyBoard = (req, res) => {
     try {
         const { id } = req.body
         const id_filter = []
         for (let i = 0; i < id.length; i++) id_filter[i] = ObjectId(id[i])
         const filter = { _id: { $in: id_filter } }
         exports.DeleteFilter = filter
-        DBQuery.DeleteManyBoard(req,res)
+        DBQuery.DeleteManyBoard(req, res)
     } catch (error) {
         return res.status(500).send('')
     }
 }
 
-exports.Delete404 = (req,res) => {
+exports.Delete404 = (req, res) => {
     res.status(404).send('Not Found')
 }

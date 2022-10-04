@@ -9,7 +9,7 @@ MongoClient.connect(config.MONGODB_CONNECT_STRING, function (err, db) {
     const dbo = db.db("db")
     const db_article = dbo.collection("article")
 
-    exports.CreateBoard = (req,res) => {
+    exports.CreateBoard = (req, res) => {
         return db_article.insertOne(condition.CreateFilter, (err, result) => {
             res.send('success')
         })
@@ -20,13 +20,13 @@ MongoClient.connect(config.MONGODB_CONNECT_STRING, function (err, db) {
             if (EmptyArray(result)) return res.status(404).send('Not Found')
             res.send(result)
         })
-    
+
         function EmptyArray(arr) {
             if (Array.isArray(arr) && arr.length === 0) return true
             return false
         }
     }
-    
+
 
     exports.ReadBoardAll = (req, res) => {
         return db_article.find({}, { projection: {} }).toArray((err, result) => {
