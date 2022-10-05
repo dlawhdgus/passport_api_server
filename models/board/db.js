@@ -1,7 +1,7 @@
 const MongoClient = require('mongodb').MongoClient
-const config = require('../../../config')
+const config = require('../../config')
 const ObjectId = require('mongodb').ObjectId
-const condition = require('../../../routes/api/board/index')
+const condition = require('../../api/board/controller')
 
 
 MongoClient.connect(config.MONGODB_CONNECT_STRING, function (err, db) {

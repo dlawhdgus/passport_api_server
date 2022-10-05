@@ -1,10 +1,5 @@
 const express = require('express')
-const { Db } = require('mongodb')
-const app = express()
-const MongoClient = require('mongodb').MongoClient
-const config = require('../../../config')
-const ObjectId = require('mongodb').ObjectId
-const DBQuery = require('../../../models/collections/board/controller')
+const DBQuery = require('../../models/board/db')
 
 exports.PostBoard = (req, res) => {
     try {
