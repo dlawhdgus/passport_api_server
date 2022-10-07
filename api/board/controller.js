@@ -1,5 +1,4 @@
-const BoardDB = require('../../models/board/db') //DBQuery말고 BoardDB로 어떤 collection인지 알기 쉽게
-const { ObjectId } = require('../../db_connect')
+const BoardDB = require('../../models/board/db')
 
 exports.PostBoard = (req, res) => {
     try {

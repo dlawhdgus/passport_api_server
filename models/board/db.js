@@ -1,8 +1,6 @@
-const MongoClient = require('mongodb').MongoClient
-const config = require('../../config')
-const ObjectId = require('mongodb').ObjectId
 const condition = require('../../api/board/controller')
 const db = require('../../db_connect')
+const { ObjectId } = require('../../db_connect')
 
 exports.CreateBoard = (callback) => {
     db.collection.insertOne(condition.CreateFilter, (err, result) => {

@@ -5,7 +5,7 @@ const config = require('./config')
 const { DBconnect } = require('./db_connect')
 
 app.use(express.json())
-app.use('/api', routes) //routes의 엔드포인트를 정해줘라 ex) /api 
+app.use('/api', routes)
 
 app.listen(config.port, () => {
     console.log('server on!!')
