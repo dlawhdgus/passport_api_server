@@ -1,5 +1,5 @@
-const express = require('express')
-const DBQuery = require('../../models/board/db')
+const BoardDB = require('../../models/board/db') //DBQuery말고 BoardDB로 어떤 collection인지 알기 쉽게
+const { ObjectId } = require('../../db_connect')
 
 exports.PostBoard = (req, res) => {
     try {
@@ -15,8 +15,7 @@ exports.PostBoard = (req, res) => {
             filter.createAt = new Date().toUTCString()
         }
         exports.CreateFilter = filter
-        DBQuery.CreateBoard(req, res)
-
+        BoardDB.CreateBoard((result) => { if (result) res.send('success') })
     } catch (error) {
         res.status(500).send('Internal Server Error')
     }
@@ -28,8 +27,9 @@ exports.Post404 = (req, res) => {
 
 exports.GetBoardAll = (req, res) => {
     try {
-        DBQuery.ReadBoardAll(req, res)
+        BoardDB.ReadBoardAll((result) => res.send(result))
     } catch (error) {
+        console.log(error)
         return res.status(500).send('Internal Server Error')
     }
 }
@@ -39,7 +39,11 @@ exports.GetBoardId = (req, res) => {
         const { id } = req.params
         if (id.length !== 24) res.status(400).send('Bad Request')
         exports.Get_ObjectId = id
-        DBQuery.ReadBoardId(req, res)
+
+        BoardDB.ReadBoardId((result) => {
+            if (!result) return res.status(404).send('Not Found')
+            else return res.send(result)
+        })
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
@@ -62,7 +66,10 @@ exports.PatchBoard = (req, res) => {
 
         exports.Patch_ObjectId = id
         exports.PatchUpdateQuery = updateQuery
-        DBQuery.UpdateBoard(req, res)
+        BoardDB.UpdateBoard((result) => {
+            if (result) res.status(404).send('Not Found')
+            else res.send('success')
+        })
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
@@ -77,7 +84,10 @@ exports.DeleteBoardId = (req, res) => {
         const { id } = req.params
         if (id.length !== 24) res.status(400).send('Bad Request')
         exports.DeleteObjectId = id
-        DBQuery.DeleteOneBoard(req, res)
+        BoardDB.DeleteOneBoard((result) => {
+            if (result) res.status(404).send('Not Found')
+            else res.send('success')
+        })
     } catch (error) {
         return res.status(500).send('')
     }
@@ -85,12 +95,15 @@ exports.DeleteBoardId = (req, res) => {
 
 exports.DeleteManyBoard = (req, res) => {
     try {
-        const { id } = req.body
+        const { _id } = req.body
         const id_filter = []
-        for (let i = 0; i < id.length; i++) id_filter[i] = ObjectId(id[i])
+        for (item in _id) id_filter[item] = ObjectId(_id[item])
         const filter = { _id: { $in: id_filter } }
         exports.DeleteFilter = filter
-        DBQuery.DeleteManyBoard(req, res)
+        BoardDB.DeleteManyBoard((result) => {
+            if (result) res.status(404).send('Not Found')
+            else res.send('success')
+        })
     } catch (error) {
         return res.status(500).send('')
     }
