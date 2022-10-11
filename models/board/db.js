@@ -14,7 +14,7 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
     if (!id || typeof id !== 'string') return res.status(400).send('id값을 다시 입력해주세요')
     if (!pw) return res.status(400).send('pw값을 다시 입력해주세요')
 
-    AuthColl.findOne({ id: id})
+    AuthColl.findOne({ id: id })
         .then(result => {
             if (result) errmessage(true)
             else {
@@ -23,16 +23,16 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
                 CreateUserFilter.pw = pw
                 CreateUserFilter.createAt = date
                 AuthColl.insertOne(CreateUserFilter)
-                AuthColl.findOne({id : id}).then(result => {
+                AuthColl.findOne({ id: id }).then(result => {
                     CreateFilter.UserId = result._id
                     CreateFilter.title = title
                     CreateFilter.nickname = nickname
                     CreateFilter.body = body
                     CreateFilter.createAt = date
                     ArticleColl.insertOne(CreateFilter)
-                    .then(callback(true))
+                        .then(callback(true))
                 })
-                
+
             }
         })
 }
@@ -62,20 +62,20 @@ exports.UpdateBoard = (callback, _id, param = {}, errmessage) => {
             if (!result) errmessage(true)
             else {
                 const UserId = result._id.toString()
-                ArticleColl.findOne({ _id : ObjectId(_id)})
-                .then(result => {
-                    if(!result) callback(true)
-                    else {
-                        if(result.UserId.toString() === UserId){
-                            ArticleColl.updateOne({ _id: ObjectId(_id) }, updateQuery)
-                                .then(result => {
-                                    if (result.matchedCount === 0) return callback(true)
-                                    else return callback(false)
-                                })
+                ArticleColl.findOne({ _id: ObjectId(_id) })
+                    .then(result => {
+                        if (!result) callback(true)
+                        else {
+                            if (result.UserId.toString() === UserId) {
+                                ArticleColl.updateOne({ _id: ObjectId(_id) }, updateQuery)
+                                    .then(result => {
+                                        if (result.matchedCount === 0) return callback(true)
+                                        else return callback(false)
+                                    })
+                            }
+                            else errmessage(true)
                         }
-                        else errmessage(true)
-                    }
-                })
+                    })
             }
         })
 }
@@ -87,17 +87,17 @@ exports.DeleteOneBoard = (callback, _id, param = {}, errmessage) => {
             if (!result) errmessage(true)
             else {
                 const UserId = result._id.toString()
-                ArticleColl.findOne({_id : ObjectId(_id)})
-                .then(result => {
-                    if(UserId === result.UserId.toString()){
-                        ArticleColl.deleteOne({ _id: ObjectId(_id) })
-                            .then(result => {
-                                if (result.deletedCount === 0) return callback(true)
-                                else return callback(false)
-                            })
-                    }
-                    else errmessage(true)
-                })
+                ArticleColl.findOne({ _id: ObjectId(_id) })
+                    .then(result => {
+                        if (UserId === result.UserId.toString()) {
+                            ArticleColl.deleteOne({ _id: ObjectId(_id) })
+                                .then(result => {
+                                    if (result.deletedCount === 0) return callback(true)
+                                    else return callback(false)
+                                })
+                        }
+                        else errmessage(true)
+                    })
             }
         })
 }
