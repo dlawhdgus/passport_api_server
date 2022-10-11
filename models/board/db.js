@@ -1,84 +1,96 @@
+const e = require('express')
 const db = require('../../db_connect')
 const ObjectId = require('mongodb').ObjectId
-// const { connection } = require('mongoose')
-// const boardColl = connection.article_collection('article')
 
-
-exports.CreateBoard = (callback, param = {}) => {  //object 
-
-    const { title, nickname, body } = param
-    const CreateBoardFilter = {}
+exports.CreateBoard = (callback, param = {}, errmessage) => {
+    const { title, nickname, body, id, pw } = param
+    const CreateFilter = {}
+    const CreateUserFilter = {}
 
     if (!title || typeof title !== 'string') return res.status(400).send('title값을 다시 입력해주세요')
-    else CreateBoardFilter.title = title
+    else CreateFilter.title = title
     if (!nickname || typeof nickname !== 'string') return res.status(400).send('nickname값을 입력해주세요')
-    else CreateBoardFilter.nickname = nickname
+    else CreateFilter.nickname = nickname
     if (!body || typeof body !== 'string') return res.status(400).send('body값을 입력해주세요')
     else {
-        CreateBoardFilter.body = body
-        CreateBoardFilter.createAt = new Date().toUTCString()
+        CreateFilter.body = body
+        CreateFilter.createAt = new Date().toUTCString()
     }
+    if (!id || typeof id !== 'string') return res.status(400).send('id값을 다시 입력해주세요')
+    if (!pw) return res.status(400).send('pw값을 다시 입력해주세요')
 
-    db.article_collection.insertOne(CreateBoardFilter, (err, result) => {
-        return callback(true)
+    db.AuthColl.findOne({ id: id }, (err, result) => {
+        if (result) return errmessage(true)
+        else {
+            let date = new Date()
+            db.ArticleColl.insertOne(CreateFilter, (err, result) => { callback(true) })
+            db.ArticleColl.findOne({ createAt: date.toUTCString() }, (err, result) => {
+                CreateUserFilter.BoardId = result._id
+                CreateUserFilter.id = id
+                CreateUserFilter.pw = pw
+                CreateUserFilter.createAt = new Date().toUTCString()
+                db.AuthColl.insertOne(CreateUserFilter, (err, result) => { })
+            })
+        }
     })
 }
-//(param = {})
-exports.ReadBoardId = (callback, id) => {
-    db.article_collection.findOne({ _id: ObjectId(id) }, (err, result) => { return callback(result) })
-    // .then((result,err) => {return callback(result)})
 
+exports.ReadBoardId = (callback, id) => {
+    db.ArticleColl.findOne({ _id: ObjectId(id) }, (err, result) => { return callback(result) })
 }
 
 exports.ReadBoardAll = (callback) => {
-    db.article_collection.find({}).toArray((err, result) => { return callback(result) })
+    db.ArticleColl.find().toArray((err, result) => { return callback(result) })
 }
 
-exports.UpdateBoard = (callback, id, param = {}) => {
-    const { title, nickname, body } = param
+exports.UpdateBoard = (callback, _id, param = {}, errmessage) => {
+    const { title, nickname, body, id, pw } = param
     const updateQuery = { $set: {} }
-
     if (title && typeof title === 'string') updateQuery.$set.title = title
     if (nickname && typeof nickname === 'string') updateQuery.$set.nickname = nickname
     if (body && typeof body === 'string') updateQuery.$set.body = body
+    if (updateQuery) updateQuery.$set.createAt = new Date().toUTCString()
+    if (!id || typeof id !== 'string') return res.status(401).send('id값을 다시 입력해주세요')
+    if (!pw) return res.status(401).send('pw값을 다시 입력해주세요')
 
-    db.article_collection.updateOne({ _id: ObjectId(id) }, updateQuery, (err, result) => {
-        if (result.matchedCount === 0) return callback(true)
-        else return callback(false)
+
+    db.AuthColl.findOne({ id: id }, (err, result) => {
+        if (!result) callback(true)
+        else {
+            let BoarId = result.BoardId
+            if (BoarId.toString() === _id) {
+                db.ArticleColl.updateOne({ _id: ObjectId(_id) }, updateQuery, (err, result) => {
+                    if (result.matchedCount === 0) return callback(true)
+                    else return callback(false)
+                })
+            }
+            else errmessage(true)
+        }
     })
+
 }
 
-exports.DeleteOneBoard = (callback, id) => {
-    db.article_collection.deleteOne({ _id: ObjectId(id) }, (err, result) => {
-        if (result.deletedCount === 0) return callback(true)
-        else return callback(false)
-    })
-}
-
-exports.DeleteManyBoard = (callback, deleteFilter) => {
-    db.article_collection.deleteMany(deleteFilter, (err, result) => {
-        if (result.deletedCount === 0) return callback(true)
-        else return callback(false)
-    })
-}
-
-///////////////////////////////////////////auth///////////////////////////////////////////////////////
-
-exports.CreateUser = (callback, param = {}) => {
+exports.DeleteOneBoard = (callback, _id, param = {}, errmessage) => {
     const { id, pw } = param
-    const CreateUserFilter = {}
-    
-    //id 중복 체크 하기
-    if (!id || typeof id !== 'string') return res.status(400).send('id값을 다시 입력해주세요')
-    else CreateUserFilter.title = title
-    if (!pw) return res.status(400).send('pw값을 입력해주세요')
-    else {
-        CreateUserFilter.body = body
-        CreateUserFilter.createAt = new Date().toUTCString()
-    }
-
-    db.auth_collection.insertOne(CreateUserFilter, (err, result) => {
-        return callback(result)
+    db.AuthColl.findOne({ id: id }, (err, result) => {
+        if (!result) callback(true)
+        else {
+            let BoardId = result.BoardId
+            if (BoardId.toString() === _id) {
+                db.ArticleColl.deleteOne({ _id: ObjectId(_id) }, (err, result) => {
+                    if (result.deletedCount === 0) return callback(true)
+                    else return callback(false)
+                })
+            } else {
+                errmessage(true)
+            }
+        }
     })
 }
 
+exports.DeleteManyBoard = (callback, DeleteFilter) => {
+    db.ArticleColl.deleteMany(DeleteFilter, (err, result) => {
+        if (result.deletedCount === 0) return callback(true)
+        else return callback(false)
+    })
+}

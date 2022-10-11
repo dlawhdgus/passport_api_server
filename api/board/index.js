@@ -8,10 +8,10 @@ router.get('/', controller.GetBoardAll)
 router.get('/:id', controller.GetBoardId)
 router.get('/*', controller.Get404)
 
-router.patch('/:id', controller.PatchBoard)
+router.patch('/:_id', controller.PatchBoard)
 router.patch('/*', controller.Patch404)
 
-router.delete('/:id', controller.DeleteBoardId)
+router.delete('/:_id', controller.DeleteBoardId)
 router.delete('/', controller.DeleteManyBoard)
 router.delete('/*', controller.Delete404)
 

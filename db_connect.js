@@ -6,9 +6,10 @@ exports.DBconnect = () => {
         if (err) throw err
         else {
             let dbo = db.db("db")
-            let Board_collection = dbo.collection("article")
-            let auth_collection = dbo.collection("auth")
-            module.exports = { Board_collection, auth_collection }
+            let ArticleColl = dbo.collection("article")
+            let AuthColl = dbo.collection('auth')
+            exports.ArticleColl = ArticleColl
+            exports.AuthColl = AuthColl
             console.log('DB connected!!')
         }
     })
