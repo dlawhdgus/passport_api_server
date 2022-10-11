@@ -31,14 +31,14 @@ exports.GetBoardAll = (req, res) => {
 
 exports.GetBoardId = (req, res) => {
     try {
-        const { id } = req.params
+        const { _id } = req.params
 
-        if (id.length !== 24) res.status(400).send('Bad Request')
+        if (_id.length !== 24) res.status(400).send('Bad Request')
 
         BoardDB.ReadBoardId(((result) => {
             if (!result) return res.status(404).send('Not Found')
             else return res.send(result)
-        }), id)
+        }), _id)
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
@@ -58,7 +58,7 @@ exports.PatchBoard = (req, res) => {
         BoardDB.UpdateBoard(((result) => {
             if (result) res.status(404).send('Not Found')
             else res.send('success')
-        }), _id, { title, nickname, body, id, pw }, (err => { if (err) res.status(401).send('인증불명확') }))
+        }), _id, { title, nickname, body, id, pw }, (err => { if (err) res.status(401).send('Unauthorized') }))
 
     } catch (error) {
         return res.status(500).send('Internal Server Error')
@@ -77,7 +77,7 @@ exports.DeleteBoardId = (req, res) => {
         BoardDB.DeleteOneBoard(((result) => {
             if (result) res.status(404).send('Not Found')
             else res.send('success')
-        }), _id, { id, pw }, (err => { if (err) res.status(401).send('인증불명확') }))
+        }), _id, { id, pw }, (err => { if (err) res.status(401).send('Unauthorized') }))
     } catch (error) {
         return res.status(500).send('')
     }
