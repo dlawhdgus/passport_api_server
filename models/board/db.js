@@ -9,32 +9,30 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
     const CreateUserFilter = {}
 
     if (!title || typeof title !== 'string') return res.status(400).send('title값을 다시 입력해주세요')
-    else CreateFilter.title = title
     if (!nickname || typeof nickname !== 'string') return res.status(400).send('nickname값을 입력해주세요')
-    else CreateFilter.nickname = nickname
     if (!body || typeof body !== 'string') return res.status(400).send('body값을 입력해주세요')
-    else {
-        CreateFilter.body = body
-        CreateFilter.createAt = new Date().toUTCString()
-    }
     if (!id || typeof id !== 'string') return res.status(400).send('id값을 다시 입력해주세요')
     if (!pw) return res.status(400).send('pw값을 다시 입력해주세요')
 
-    AuthColl.findOne({ id: id, pw: pw })
+    AuthColl.findOne({ id: id})
         .then(result => {
             if (result) errmessage(true)
             else {
-                let date = new Date()
-                ArticleColl.insertOne(CreateFilter)
+                let date = new Date().toUTCString()
+                CreateUserFilter.id = id
+                CreateUserFilter.pw = pw
+                CreateUserFilter.createAt = date
+                AuthColl.insertOne(CreateUserFilter)
+                AuthColl.findOne({id : id}).then(result => {
+                    CreateFilter.UserId = result._id
+                    CreateFilter.title = title
+                    CreateFilter.nickname = nickname
+                    CreateFilter.body = body
+                    CreateFilter.createAt = date
+                    ArticleColl.insertOne(CreateFilter)
                     .then(callback(true))
-                ArticleColl.findOne({ createAt: date.toUTCString() })
-                    .then(result => {
-                        CreateUserFilter.BoardId = result._id
-                        CreateUserFilter.id = id
-                        CreateUserFilter.pw = pw
-                        CreateUserFilter.createAt = new Date().toUTCString()
-                        AuthColl.insertOne(CreateUserFilter)
-                    })
+                })
+                
             }
         })
 }
@@ -63,15 +61,21 @@ exports.UpdateBoard = (callback, _id, param = {}, errmessage) => {
         .then(result => {
             if (!result) errmessage(true)
             else {
-                let BoarId = result.BoardId
-                if (BoarId.toString() === _id) {
-                    ArticleColl.updateOne({ _id: ObjectId(_id) }, updateQuery)
-                        .then(result => {
-                            if (result.matchedCount === 0) return callback(true)
-                            else return callback(false)
-                        })
-                }
-                else errmessage(true)
+                const UserId = result._id.toString()
+                ArticleColl.findOne({ _id : ObjectId(_id)})
+                .then(result => {
+                    if(!result) callback(true)
+                    else {
+                        if(result.UserId.toString() === UserId){
+                            ArticleColl.updateOne({ _id: ObjectId(_id) }, updateQuery)
+                                .then(result => {
+                                    if (result.matchedCount === 0) return callback(true)
+                                    else return callback(false)
+                                })
+                        }
+                        else errmessage(true)
+                    }
+                })
             }
         })
 }
@@ -82,16 +86,18 @@ exports.DeleteOneBoard = (callback, _id, param = {}, errmessage) => {
         .then(result => {
             if (!result) errmessage(true)
             else {
-                let BoardId = result.BoardId
-                if (BoardId.toString() === _id) {
-                    ArticleColl.deleteOne({ _id: ObjectId(_id) })
-                        .then(result => {
-                            if (result.deletedCount === 0) return callback(true)
-                            else return callback(false)
-                        })
-                } else {
-                    errmessage(true)
-                }
+                const UserId = result._id.toString()
+                ArticleColl.findOne({_id : ObjectId(_id)})
+                .then(result => {
+                    if(UserId === result.UserId.toString()){
+                        ArticleColl.deleteOne({ _id: ObjectId(_id) })
+                            .then(result => {
+                                if (result.deletedCount === 0) return callback(true)
+                                else return callback(false)
+                            })
+                    }
+                    else errmessage(true)
+                })
             }
         })
 }
