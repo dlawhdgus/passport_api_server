@@ -5,7 +5,7 @@ router.post('/', controller.PostBoard)
 router.post('/*', controller.Post404)
 
 router.get('/', controller.GetBoardAll)
-router.get('/:id', controller.GetBoardId)
+router.get('/:_id', controller.GetBoardId)
 router.get('/*', controller.Get404)
 
 router.patch('/:_id', controller.PatchBoard)
