@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const routes = require('./api/index')
+const routes = require('./routes/api')
 const config = require('./config')
 const { dbconnect } = require('./db_connect')
 

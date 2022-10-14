@@ -1,4 +1,4 @@
-const BoardDB = require('../../models/board/db')
+const BoardDB = require('../../../models/board/db')
 
 exports.PostBoard = (req, res) => {
     try {
@@ -16,10 +16,6 @@ exports.PostBoard = (req, res) => {
     }
 }
 
-exports.Post404 = (req, res) => {
-    res.status(404).send('Not Found')
-}
-
 exports.GetBoardAll = (req, res) => {
     try {
         BoardDB.ReadBoardAll((result) => res.send(result))
@@ -31,73 +27,60 @@ exports.GetBoardAll = (req, res) => {
 
 exports.GetBoardId = (req, res) => {
     try {
-        const { _id } = req.params
-
-        if (_id.length !== 24) res.status(400).send('Bad Request')
+        const { id : BoardId } = req.params
+        if (BoardId.length !== 24) res.status(400).send('Bad Request')
 
         BoardDB.ReadBoardId(((result) => {
             if (!result) return res.status(404).send('Not Found')
             else return res.send(result)
-        }), _id)
+        }), BoardId)
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
 }
 
-exports.Get404 = (req, res) => {
-    res.status(404).send('Not Found')
-}
-
 exports.PatchBoard = (req, res) => {
     try {
-        const { _id } = req.params
+        const { id : BoardId } = req.params
         const { title, nickname, body, id, pw } = req.body
-        if (_id.length !== 24) res.status(400).send('Bad Request')
+        if (BoardId.length !== 24) res.status(400).send('Bad Request')
         if ((!title || typeof title !== 'string') && (!nickname || typeof nickname !== 'string') && (!body || typeof body !== 'string')) return res.status(400).send('Bad Request')
 
         BoardDB.UpdateBoard(((result) => {
             if (result) res.status(404).send('Not Found')
             else res.send('success')
-        }), _id, { title, nickname, body, id, pw }, (err => { if (err) res.status(401).send('Unauthorized') }))
+        }), BoardId, { title, nickname, body, id, pw }, (err => { if (err) res.status(401).send('Unauthorized') }))
 
     } catch (error) {
         return res.status(500).send('Internal Server Error')
     }
 }
 
-exports.Patch404 = (req, res) => {
-    res.status(404).send('Not Found')
-}
-
 exports.DeleteBoardId = (req, res) => {
     try {
-        const { _id } = req.params
+        const { id : BoardId } = req.params
         const { id, pw } = req.body
-        if (_id.length !== 24) res.status(400).send('Bad Request')
+        if (BoardId.length !== 24) res.status(400).send('Bad Request')
         BoardDB.DeleteOneBoard(((result) => {
             if (result) res.status(404).send('Not Found')
             else res.send('success')
-        }), _id, { id, pw }, (err => { if (err) res.status(401).send('Unauthorized') }))
+        }), BoardId, { id, pw }, (err => { if (err) res.status(401).send('Unauthorized') }))
     } catch (error) {
-        return res.status(500).send('')
+        return res.status(500).send('Internal Server Error')
     }
 }
 
 exports.DeleteManyBoard = (req, res) => {
     try {
-        const { _id } = req.body
+        const { id : BoardId } = req.body
         const id_filter = []
-        for (item in _id) id_filter[item] = ObjectId(_id[item])
+        for (item in BoardId) id_filter[item] = ObjectId(BoardId[item])
         const filter = { _id: { $in: id_filter } }
         BoardDB.DeleteManyBoard(((result) => {
             if (result) res.status(404).send('Not Found')
             else res.send('success')
         }), filter)
     } catch (error) {
-        return res.status(500).send('')
+        return res.status(500).send('Internal Server Error')
     }
-}
-
-exports.Delete404 = (req, res) => {
-    res.status(404).send('Not Found')
 }

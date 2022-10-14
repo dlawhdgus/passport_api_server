@@ -24,7 +24,7 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
                 CreateUserFilter.createAt = date
                 AuthColl.insertOne(CreateUserFilter)
                 AuthColl.findOne({ id: id }).then(result => {
-                    CreateFilter.UserId = result._id
+                    CreateFilter.userid = result._id
                     CreateFilter.title = title
                     CreateFilter.nickname = nickname
                     CreateFilter.body = body
@@ -35,19 +35,22 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
 
             }
         })
+        .catch(err => {if(err) throw err})
 }
 
-exports.ReadBoardId = (callback, _id) => {
-    ArticleColl.findOne({ _id: ObjectId(_id) })
+exports.ReadBoardId = (callback, BoardId) => {
+    ArticleColl.findOne({ _id: ObjectId(BoardId) })
         .then(result => callback(result))
+        .catch(err => {if(err) throw err})
 }
 
 exports.ReadBoardAll = (callback) => {
     ArticleColl.find().toArray()
         .then(result => callback(result))
+        .catch(err => {if(err) throw err})
 }
 
-exports.UpdateBoard = (callback, _id, param = {}, errmessage) => {
+exports.UpdateBoard = (callback, BoardId, param = {}, errmessage) => {
     const { title, nickname, body, id, pw } = param
     const updateQuery = { $set: {} }
     if (title && typeof title === 'string') updateQuery.$set.title = title
@@ -61,13 +64,13 @@ exports.UpdateBoard = (callback, _id, param = {}, errmessage) => {
         .then(result => {
             if (!result) errmessage(true)
             else {
-                const UserId = result._id.toString()
-                ArticleColl.findOne({ _id: ObjectId(_id) })
+                const userid = result._id.toString()
+                ArticleColl.findOne({ _id: ObjectId(BoardId) })
                     .then(result => {
                         if (!result) callback(true)
                         else {
-                            if (result.UserId.toString() === UserId) {
-                                ArticleColl.updateOne({ _id: ObjectId(_id) }, updateQuery)
+                            if (result.userid.toString() === userid) {
+                                ArticleColl.updateOne({ _id: ObjectId(BoardId) }, updateQuery)
                                     .then(result => {
                                         if (result.matchedCount === 0) return callback(true)
                                         else return callback(false)
@@ -78,19 +81,20 @@ exports.UpdateBoard = (callback, _id, param = {}, errmessage) => {
                     })
             }
         })
+        .catch(err => {if(err) throw err})
 }
 
-exports.DeleteOneBoard = (callback, _id, param = {}, errmessage) => {
+exports.DeleteOneBoard = (callback, BoardId, param = {}, errmessage) => {
     const { id, pw } = param
     AuthColl.findOne({ id: id, pw: pw })
         .then(result => {
             if (!result) errmessage(true)
             else {
-                const UserId = result._id.toString()
-                ArticleColl.findOne({ _id: ObjectId(_id) })
+                const userid = result._id.toString()
+                ArticleColl.findOne({ _id: ObjectId(BoardId) })
                     .then(result => {
-                        if (UserId === result.UserId.toString()) {
-                            ArticleColl.deleteOne({ _id: ObjectId(_id) })
+                        if (userid === result.userid.toString()) {
+                            ArticleColl.deleteOne({ _id: ObjectId(BoardId) })
                                 .then(result => {
                                     if (result.deletedCount === 0) return callback(true)
                                     else return callback(false)
@@ -100,6 +104,7 @@ exports.DeleteOneBoard = (callback, _id, param = {}, errmessage) => {
                     })
             }
         })
+        .catch(err => {if(err) throw err})
 }
 
 exports.DeleteManyBoard = (callback, DeleteFilter) => {
@@ -108,4 +113,5 @@ exports.DeleteManyBoard = (callback, DeleteFilter) => {
             if (result.deletedCount === 0) return callback(true)
             else return callback(false)
         })
+        .catch(err => {if(err) throw err})
 }
