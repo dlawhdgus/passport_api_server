@@ -3,6 +3,9 @@ const LocalStrategy = require('passport-local').Strategy
 const { connection } = require('mongoose')
 const passport = require('passport')
 const AuthColl = connection.collection('auth')
+const crypto = require('crypto')
+const jwt = require('jsonwebtoken')
+const salt = crypto.randomBytes(128).toString('base64')
 
 passport.use(new LocalStrategy(
     {
@@ -10,7 +13,6 @@ passport.use(new LocalStrategy(
         passwordField : 'pw'
     },
     function (username, password, done) {
-        console.log('LocalStrategy',username, password)
         AuthColl.findOne({id: username, pw: password})
         .then(user => {
             if(user) {
@@ -26,15 +28,33 @@ passport.use(new LocalStrategy(
     }
 ))
 
+exports.SignUp = (req, res) => {
+    const { id, pw } = req.body
+    const SignUpFilter = {}
 
+    if (!id || typeof id !== 'string') return res.status(400).send('id값을 다시 입력해주세요')
+    if (!pw) return res.status(400).send('pw값을 입력해주세요')
 
-
-
-exports.SignIn = (req, res) => {
-    const { user } = req
-    console.log(`id : ${user.id}`)
+    AuthColl.findOne({id : id})
+    .then(result => {
+        if(result) res.status(400).send('id가 존재합니다')
+        else {
+            const encodingPw = crypto.createHash('sha512').update(pw + salt).digest('hex')
+            SignUpFilter.id = id
+            SignUpFilter.pw = encodingPw
+            AuthColl.insertOne(SignUpFilter)
+        }
+    })
+    .catch(e => {if(e) throw e})
 }
 
-exports.test = (req, res) => {
-    console.log('a')
+exports.SignIn = (req, res) => {
+
+    
+    const { user } = req
+    AuthColl.findOne({id : user.id, pw : user.pw})
+    .then(result => {
+        if(result) res.send('success login')
+    })
+    .catch(e => {if(e) throw e})
 }
