@@ -19,6 +19,8 @@ exports.SignUp = (req, res) => {
             else {
                 SignUpFilter.id = id
                 SignUpFilter.pw = crypto.encoding(pw)
+                SignUpFilter.createAt = new Date().toUTCString()
+
                 AuthColl.insertOne(SignUpFilter)
                     .then(res.send('success'))
                     .catch(e => { if (e) throw e })
@@ -32,13 +34,20 @@ exports.SignIn = (req, res) => {
     AuthColl.findOne({ id: user.id, pw: user.pw })
         .then(result => {
             if (result) {
-                const token = jwt.sign({ user_id: result._id.toString() },
-                    config.SECRET_KEY, {
-                    expiresIn: '1h'
-                })
-                res.cookie('user', token)
+                const token = jwt.sign(
+                    {
+                        type: "JWT",
+                        user_id: result._id.toString()
+                    },
+                    config.SECRET_KEY,
+                    {
+                        expiresIn: '1h',
+                        issuer: "Lim"
+                    }
+                )
                 res.send(`login success
 ${token}`)
+                console.log(req.headers.authorization)
             }
         })
         .catch(e => { if (e) throw e })
