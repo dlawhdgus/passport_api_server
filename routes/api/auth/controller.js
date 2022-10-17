@@ -13,33 +13,33 @@ exports.SignUp = (req, res) => {
     if (!id || typeof id !== 'string') return res.status(400).send('id값을 다시 입력해주세요')
     if (!pw) return res.status(400).send('pw값을 입력해주세요')
 
-    AuthColl.findOne({id : id})
-    .then(result => {
-        if(result) res.status(400).send('id가 존재합니다')
-        else {
-            SignUpFilter.id = id
-            SignUpFilter.pw = crypto.encoding(pw)
-            AuthColl.insertOne(SignUpFilter)
-            .then(res.send('success'))
-            .catch(e => {if(e) throw e})
-        }
-    })
-    .catch(e => {if(e) throw e})
+    AuthColl.findOne({ id: id })
+        .then(result => {
+            if (result) res.status(400).send('id가 존재합니다')
+            else {
+                SignUpFilter.id = id
+                SignUpFilter.pw = crypto.encoding(pw)
+                AuthColl.insertOne(SignUpFilter)
+                    .then(res.send('success'))
+                    .catch(e => { if (e) throw e })
+            }
+        })
+        .catch(e => { if (e) throw e })
 }
 
 exports.SignIn = (req, res) => {
     const { user } = req
-    AuthColl.findOne({id : user.id, pw : user.pw})
-    .then(result => {
-        if(result) {
-            const token = jwt.sign({user_id : result._id.toString()},
-            config.SECRET_KEY,{
-                expiresIn: '1h'
-            })
-            res.cookie('user',token)
-            res.send(`login success
+    AuthColl.findOne({ id: user.id, pw: user.pw })
+        .then(result => {
+            if (result) {
+                const token = jwt.sign({ user_id: result._id.toString() },
+                    config.SECRET_KEY, {
+                    expiresIn: '1h'
+                })
+                res.cookie('user', token)
+                res.send(`login success
 ${token}`)
-        }
-    })
-    .catch(e => {if(e) throw e})
+            }
+        })
+        .catch(e => { if (e) throw e })
 }

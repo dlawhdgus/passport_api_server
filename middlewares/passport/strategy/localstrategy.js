@@ -7,32 +7,32 @@ const crypto = require('../../../routes/api/auth/crypto')
 module.exports = () => {
     passport.use(new LocalStrategy(
         {
-            usernameField : 'id',
-            passwordField : 'pw'
+            usernameField: 'id',
+            passwordField: 'pw'
         },
         function (username, password, done) {
-            AuthColl.findOne({id : username})
-            .then(result => {
-                if(result) {
-                    if(password === crypto.decoding(result.pw)) {
-                        AuthColl.findOne({id: username, pw: result.pw})
-                        .then(user => {
-                            if(user) {
-                                return done(null, user)
-                            }
-                            else {
-                                return done(null, false, {message : 'Incorrect password'})
-                            }
-                        })
-                        .catch(e => {
-                            console.log('Internal Server Error')
-                        })
+            AuthColl.findOne({ id: username })
+                .then(result => {
+                    if (result) {
+                        if (password === crypto.decoding(result.pw)) {
+                            AuthColl.findOne({ id: username, pw: result.pw })
+                                .then(user => {
+                                    if (user) {
+                                        return done(null, user)
+                                    }
+                                    else {
+                                        return done(null, false, { message: 'Incorrect password' })
+                                    }
+                                })
+                                .catch(e => {
+                                    console.log('Internal Server Error')
+                                })
+                        }
+                        else return done(null, false)
                     }
-                    else return done(null, false)
-                }
-                else return done(null, false, {message : 'Bad Request'})
-            })
-            .catch(e => {if(e) throw e})
+                    else return done(null, false, { message: 'Bad Request' })
+                })
+                .catch(e => { if (e) throw e })
         }
     ))
 }
