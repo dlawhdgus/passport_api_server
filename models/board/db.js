@@ -2,6 +2,7 @@ const { connection } = require('mongoose')
 const ArticleColl = connection.collection('article')
 const AuthColl = connection.collection('auth')
 const ObjectId = require('mongoose').Types.ObjectId
+const crypto = require('../../routes/api/auth/crypto')
 
 exports.CreateBoard = (callback, param = {}, errmessage) => {
     const { title, nickname, body, id, pw } = param
@@ -20,7 +21,7 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
             else {
                 let date = new Date().toUTCString()
                 CreateUserFilter.id = id
-                CreateUserFilter.pw = pw
+                CreateUserFilter.pw = crypto.encoding(pw)
                 CreateUserFilter.createAt = date
                 AuthColl.insertOne(CreateUserFilter)
                 AuthColl.findOne({ id: id }).then(result => {
@@ -35,19 +36,19 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
 
             }
         })
-        .catch(err => {if(err) throw err})
+        .catch(err => { if (err) throw err })
 }
 
 exports.ReadBoardId = (callback, BoardId) => {
     ArticleColl.findOne({ _id: ObjectId(BoardId) })
         .then(result => callback(result))
-        .catch(err => {if(err) throw err})
+        .catch(err => { if (err) throw err })
 }
 
 exports.ReadBoardAll = (callback) => {
     ArticleColl.find().toArray()
         .then(result => callback(result))
-        .catch(err => {if(err) throw err})
+        .catch(err => { if (err) throw err })
 }
 
 exports.UpdateBoard = (callback, BoardId, param = {}, errmessage) => {
@@ -60,36 +61,38 @@ exports.UpdateBoard = (callback, BoardId, param = {}, errmessage) => {
     if (!id || typeof id !== 'string') return res.status(401).send('id값을 다시 입력해주세요')
     if (!pw) return res.status(401).send('pw값을 다시 입력해주세요')
 
-    AuthColl.findOne({ id: id, pw: pw })
+    AuthColl.findOne({ id: id })
         .then(result => {
             if (!result) errmessage(true)
             else {
-                const userid = result._id.toString()
-                ArticleColl.findOne({ _id: ObjectId(BoardId) })
-                    .then(result => {
-                        if (!result) callback(true)
-                        else {
-                            if (result.userid.toString() === userid) {
-                                ArticleColl.updateOne({ _id: ObjectId(BoardId) }, updateQuery)
-                                    .then(result => {
-                                        if (result.matchedCount === 0) return callback(true)
-                                        else return callback(false)
-                                    })
+                if (pw === crypto.decoding(result.pw)) {
+                    const userid = result._id.toString()
+                    ArticleColl.findOne({ _id: ObjectId(BoardId) })
+                        .then(result => {
+                            if (!result) callback(true)
+                            else {
+                                if (result.userid.toString() === userid) {
+                                    ArticleColl.updateOne({ _id: ObjectId(BoardId) }, updateQuery)
+                                        .then(result => {
+                                            if (result.matchedCount === 0) return callback(true)
+                                            else return callback(false)
+                                        })
+                                }
+                                else errmessage(true)
                             }
-                            else errmessage(true)
-                        }
-                    })
+                        })
+                }
+                else errmessage(true)
             }
         })
-        .catch(err => {if(err) throw err})
+
 }
 
 exports.DeleteOneBoard = (callback, BoardId, param = {}, errmessage) => {
     const { id, pw } = param
-    AuthColl.findOne({ id: id, pw: pw })
+    AuthColl.findOne({ id: id })
         .then(result => {
-            if (!result) errmessage(true)
-            else {
+            if (pw === crypto.decoding(result.pw)) {
                 const userid = result._id.toString()
                 ArticleColl.findOne({ _id: ObjectId(BoardId) })
                     .then(result => {
@@ -103,8 +106,9 @@ exports.DeleteOneBoard = (callback, BoardId, param = {}, errmessage) => {
                         else errmessage(true)
                     })
             }
+            else errmessage(true)
         })
-        .catch(err => {if(err) throw err})
+        .catch(err => { if (err) throw err })
 }
 
 exports.DeleteManyBoard = (callback, DeleteFilter) => {
@@ -113,5 +117,5 @@ exports.DeleteManyBoard = (callback, DeleteFilter) => {
             if (result.deletedCount === 0) return callback(true)
             else return callback(false)
         })
-        .catch(err => {if(err) throw err})
+        .catch(err => { if (err) throw err })
 }
