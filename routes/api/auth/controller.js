@@ -1,22 +1,32 @@
 //토큰을 발급해주는 곳
-const LocalStrategy = require('passport-local').Strategy
 const { connection } = require('mongoose')
 const AuthColl = connection.collection('auth')
 const jwt = require('jsonwebtoken')
-const crypto = require('./crypto')
 const config = require('../../../config')
+const crypto = require('../../../modules/crypto')
 
 exports.SignUp = (req, res) => {
-    const { user } = req
+    const { id, pw } = req.body
+    if(!id || typeof id !== 'string') res.status(400).send('Bad Request')
+    if(!pw || typeof pw !== 'string') res.status(400).send('Bad Request')
+
     const CreateUserFilter = {}
 
-    CreateUserFilter.id = user.id
-    CreateUserFilter.pw = user.pw
-    CreateUserFilter.createAt = new Date().toUTCString()
+    AuthColl.findOne({id : id})
+    .then(result => {
+        if(result) res.status(400).send('id가 있습니다.')
+        else {
+            CreateUserFilter.id = id
+            CreateUserFilter.pw = crypto.encoding(pw)
+            CreateUserFilter.createAt = new Date().toUTCString()
 
-    AuthColl.insertOne(CreateUserFilter)
-        .then(res.send('success'))
-        .catch(e => { if (e) throw e })
+            AuthColl.insertOne(CreateUserFilter)
+                .then(res.send('success'))
+                .catch(e => { if (e) throw e })
+        }
+    })
+
+
 }
 
 exports.SignIn = (req, res) => {
