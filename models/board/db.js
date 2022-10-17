@@ -2,7 +2,7 @@ const { connection } = require('mongoose')
 const ArticleColl = connection.collection('article')
 const AuthColl = connection.collection('auth')
 const ObjectId = require('mongoose').Types.ObjectId
-const crypto = require('../../routes/api/auth/crypto')
+const crypto = require('../../modules/crypto')
 
 exports.CreateBoard = (callback, param = {}, errmessage) => {
     const { title, nickname, body, id, pw } = param

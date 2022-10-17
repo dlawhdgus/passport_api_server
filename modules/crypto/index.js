@@ -1,5 +1,5 @@
 const CryptoJS = require('crypto-js')
-const config = require('../../../config')
+const config = require('../../config')
 
 exports.encoding = (password) => {
     return CryptoJS.AES.encrypt(JSON.stringify(password), config.SECRET_KEY).toString()

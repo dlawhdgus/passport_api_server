@@ -2,7 +2,7 @@ const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const { connection } = require('mongoose')
 const AuthColl = connection.collection('auth')
-const crypto = require('../../../routes/api/auth/crypto')
+const crypto = require('../../../modules/crypto')
 
 module.exports = () => {
     passport.use(new LocalStrategy(
