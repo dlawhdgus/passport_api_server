@@ -7,25 +7,15 @@ const crypto = require('./crypto')
 const config = require('../../../config')
 
 exports.SignUp = (req, res) => {
-    const { id, pw } = req.body
-    const SignUpFilter = {}
+    const { user } = req
+    const CreateUserFilter = {}
 
-    if (!id || typeof id !== 'string') return res.status(400).send('id값을 다시 입력해주세요')
-    if (!pw) return res.status(400).send('pw값을 입력해주세요')
+    CreateUserFilter.id = user.id
+    CreateUserFilter.pw = user.pw
+    CreateUserFilter.createAt = new Date().toUTCString()
 
-    AuthColl.findOne({ id: id })
-        .then(result => {
-            if (result) res.status(400).send('id가 존재합니다')
-            else {
-                SignUpFilter.id = id
-                SignUpFilter.pw = crypto.encoding(pw)
-                SignUpFilter.createAt = new Date().toUTCString()
-
-                AuthColl.insertOne(SignUpFilter)
-                    .then(res.send('success'))
-                    .catch(e => { if (e) throw e })
-            }
-        })
+    AuthColl.insertOne(CreateUserFilter)
+        .then(res.send('success'))
         .catch(e => { if (e) throw e })
 }
 
