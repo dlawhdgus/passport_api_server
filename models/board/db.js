@@ -19,17 +19,17 @@ exports.CreateBoard = (callback, param = {}, errmessage) => {
         .then(result => {
             if (result) errmessage(true)
             else {
-                let date = new Date().toUTCString()
+                let date = new Date()
                 CreateUserFilter.id = id
                 CreateUserFilter.pw = crypto.encoding(pw)
-                CreateUserFilter.createAt = date
+                CreateUserFilter.createdAt = date
                 AuthColl.insertOne(CreateUserFilter)
                 AuthColl.findOne({ id: id }).then(result => {
                     CreateFilter.userid = result._id
                     CreateFilter.title = title
                     CreateFilter.nickname = nickname
                     CreateFilter.body = body
-                    CreateFilter.createAt = date
+                    CreateFilter.createdAt = date
                     ArticleColl.insertOne(CreateFilter)
                         .then(callback(true))
                 })
@@ -57,7 +57,7 @@ exports.UpdateBoard = (callback, BoardId, param = {}, errmessage) => {
     if (title && typeof title === 'string') updateQuery.$set.title = title
     if (nickname && typeof nickname === 'string') updateQuery.$set.nickname = nickname
     if (body && typeof body === 'string') updateQuery.$set.body = body
-    if (updateQuery) updateQuery.$set.createAt = new Date().toUTCString()
+    if (updateQuery) updateQuery.$set.createdAt = new Date()
     if (!id || typeof id !== 'string') return res.status(401).send('id값을 다시 입력해주세요')
     if (!pw) return res.status(401).send('pw값을 다시 입력해주세요')
 
