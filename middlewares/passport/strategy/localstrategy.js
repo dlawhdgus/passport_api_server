@@ -21,16 +21,14 @@ module.exports = () => {
                                         return done(null, user)
                                     }
                                     else {
-                                        return done(null, false, { message: 'Incorrect password' })
+                                        return done(null, false)
                                     }
                                 })
-                                .catch(e => {
-                                    console.log('Internal Server Error')
-                                })
+                                .catch(e => { if(e) throw e})
                         }
                         else return done(null, false)
                     }
-                    else return done(null, false, { message: 'Bad Request' })
+                    else return done(null, false)
                 })
                 .catch(e => { if (e) throw e })
         }
