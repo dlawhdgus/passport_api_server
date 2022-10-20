@@ -58,8 +58,6 @@ exports.UpdateBoard = (callback, BoardId, param = {}, errmessage) => {
     if (nickname && typeof nickname === 'string') updateQuery.$set.nickname = nickname
     if (body && typeof body === 'string') updateQuery.$set.body = body
     if (updateQuery) updateQuery.$set.createdAt = new Date()
-    if (!id || typeof id !== 'string') return res.status(401).send('id값을 다시 입력해주세요')
-    if (!pw) return res.status(401).send('pw값을 다시 입력해주세요')
 
     AuthColl.findOne({ id: id })
         .then(result => {
@@ -68,8 +66,8 @@ exports.UpdateBoard = (callback, BoardId, param = {}, errmessage) => {
                 if (pw === crypto.decoding(result.pw)) {
                     const userid = result._id.toString()
                     ArticleColl.findOne({ _id: ObjectId(BoardId) })
-                        .then(result => {
-                            if (!result) callback(true)
+                    .then(result => {
+                    if (!result) callback(true)
                             else {
                                 if (result.userid.toString() === userid) {
                                     ArticleColl.updateOne({ _id: ObjectId(BoardId) }, updateQuery)
@@ -111,11 +109,19 @@ exports.DeleteOneBoard = (callback, BoardId, param = {}, errmessage) => {
         .catch(err => { if (err) throw err })
 }
 
-exports.DeleteManyBoard = (callback, DeleteFilter) => {
-    ArticleColl.deleteMany(DeleteFilter)
-        .then(result => {
-            if (result.deletedCount === 0) return callback(true)
-            else return callback(false)
+exports.DeleteManyBoard = (callback, BoardId, errmessage) => {
+    const IdLength = BoardId.toString()
+    if (IdLength.length !== 24) errmessage(true)
+    const id_filter = []
+    for (item in BoardId) id_filter[item] = ObjectId(BoardId[item])
+    const filter = { _id: { $in: id_filter } }
+    ArticleColl.deleteMany(filter)
+    .then(result => {
+        if(result.deletedCount === 0) callback(true)
+        else {
+                if (result.deletedCount === 0) return callback(true)
+                else return callback(false)
+            }
         })
-        .catch(err => { if (err) throw err })
+    .catch(err => { if (err) throw err })
 }

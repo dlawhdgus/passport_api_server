@@ -1,4 +1,5 @@
 const BoardDB = require('../../../models/board/db')
+const ObjectId = require('mongoose').Types.ObjectId
 
 exports.PostBoard = (req, res) => {
     try {
@@ -72,15 +73,16 @@ exports.DeleteBoardId = (req, res) => {
 
 exports.DeleteManyBoard = (req, res) => {
     try {
-        const { id : BoardId } = req.body
-        const id_filter = []
-        for (item in BoardId) id_filter[item] = ObjectId(BoardId[item])
-        const filter = { _id: { $in: id_filter } }
-        BoardDB.DeleteManyBoard(((result) => {
-            if (result) res.status(404).send('Not Found')
-            else res.send('success')
-        }), filter)
+        const {id : BoardId } = req.body
+        if(!BoardId || typeof BoardId !== 'object') res.status(400).send('id값을 입력해 주세요')
+        else {
+            BoardDB.DeleteManyBoard(((result) => {
+                if (result) res.status(404).send('id값이 없습니다.')
+                else res.send('success')
+            }),BoardId, (e => {if(e) res.status(400).send('Bad Request')}))
+        }
     } catch (error) {
+        console.log(error)
         return res.status(500).send('Internal Server Error')
     }
 }
